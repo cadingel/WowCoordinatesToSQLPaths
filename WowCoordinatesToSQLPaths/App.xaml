@@ -1,7 +1,7 @@
 ﻿<Application x:Class="WowWaypointsToSQL.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:WowWaypointsToSQL"
+             xmlns:local="clr-namespace:WowCoordinatesToSQLPaths"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
          
