@@ -94,10 +94,11 @@ namespace WowCoordinatesToSQLPaths
             _isOneDirectionalPath = false;
             _isBiDirectionalPath = false;
             _isGuidChecked = false;
+            _isEntryChecked = true;
 
-            if (script != null)
+            if (entryRadButton != null)
             {
-                script.IsChecked = true;
+                entryRadButton.IsChecked = true;
             }
 
             UpdateDataGrid();
