@@ -4,9 +4,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Data;
 using WowCoordinatesToSQLPaths.Model;
-using NLua;
 using System;
-using System.Collections;
 using LsonLib;
 using System.IO;
 using System.Windows.Controls;
@@ -17,13 +15,13 @@ namespace WowCoordinatesToSQLPaths
     {
         public ICollectionView Waypoints { get; set; }
 
-        private bool _isGuidChecked;
-        private bool _isEntryChecked;
-        private bool _isOneDirectionalPath;
-        private bool _isBiDirectionalPath;
-        private bool _isScriptWaypointPath;
-        private int _guidEntryValue;
-        private int _startingPoint;
+        private bool _isGuidChecked = true;
+        private bool _isEntryChecked = false;
+        private bool _isOneDirectionalPath = true;
+        private bool _isBiDirectionalPath = false;
+        private bool _isScriptWaypointPath = false;
+        private int _guidEntryValue = 123;
+        private int _startingPoint = 1;
 
         private List<CreatureMovementRow> _creatureMovementRows = new List<CreatureMovementRow>();
         private List<CreatureMovementTemplateRow> _creatureMovementTemplateRows = new List<CreatureMovementTemplateRow>();
@@ -31,64 +29,38 @@ namespace WowCoordinatesToSQLPaths
 
         private string coordinatesFilePath = "";
     
-
         public MainWindow()
         {
             InitializeComponent();
             InitContent();
             DataContext = this;
-           
 
+            dataGrid.CellEditEnding += dataGrid_CellEditEnding;
 
-
+            guidEntry.GotFocus += RemoveText;
+            guidEntry.LostFocus += AddText;
         }
 
         private void InitContent()
         {
-            _isGuidChecked = true;
-            _isEntryChecked = false;
-            _isOneDirectionalPath = true;
-            _isBiDirectionalPath = false;
-            _isScriptWaypointPath = false;
-
-            _guidEntryValue = 0;
-            _startingPoint = 0;
-
-            var waypoints = new List<CreatureMovementRow> { new CreatureMovementRow
-                {
-                    Id = _guidEntryValue,
-                    Point = _startingPoint,
-                    PositionX = 0,
-                    PositionY = 0,
-                    PositionZ = 0,
-                    WaitTime = 0,
-                    ScriptId = 0,
-                    TextId1 = 0,
-                    TextId2 = 0,
-                    TextId3 = 0,
-                    TextId4 = 0,
-                    TextId5 = 0,
-                    Emote = 0,
-                    Spell = 0,
-                    Orientation = 0,
-                    Model1 = 0,
-                    Model2 = 0
-                }
-            };
-
-            Waypoints = CollectionViewSource.GetDefaultView(waypoints);
+            Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementRows);
+            UpdateDataGrid();
         } 
 
         private void guidRadButton_Checked(object sender, RoutedEventArgs e)
         {
             _isGuidChecked = true;
             _isEntryChecked = false;
+
+            UpdateDataGrid();
         }
 
         private void entryRadButton_Checked(object sender, RoutedEventArgs e)
         {
             _isEntryChecked = true;
             _isGuidChecked = false;
+
+            UpdateDataGrid();
         }
 
         private void oneDirectional_Checked(object sender, RoutedEventArgs e)
@@ -96,6 +68,8 @@ namespace WowCoordinatesToSQLPaths
             _isOneDirectionalPath = true;
             _isBiDirectionalPath = false;
             _isScriptWaypointPath = false;
+
+            UpdateDataGrid();
         }
 
         private void biDirectional_Checked(object sender, RoutedEventArgs e)
@@ -103,6 +77,8 @@ namespace WowCoordinatesToSQLPaths
             _isBiDirectionalPath = true;
             _isOneDirectionalPath = false;
             _isScriptWaypointPath = false;
+
+            UpdateDataGrid();
         }
 
         private void script_Checked(object sender, RoutedEventArgs e)
@@ -110,9 +86,9 @@ namespace WowCoordinatesToSQLPaths
             _isScriptWaypointPath = true;
             _isOneDirectionalPath = false;
             _isBiDirectionalPath = false;
-        }
 
-       
+            UpdateDataGrid();
+        }
 
         private void getCoordinatesFiles_Click(object sender, RoutedEventArgs e)
         {
@@ -122,13 +98,13 @@ namespace WowCoordinatesToSQLPaths
             if (openFileDialog.ShowDialog() == true)
             {
                 currentlyLoadedCoordinatesFile.Content = coordinatesFilePath = openFileDialog.FileName;
-                NameHereGood();
-                CheckTableType();
+                CreateListsForDataGrid();
+                UpdateDataGrid();
+                saveWaypoints.IsEnabled = true;
             }
-            
         }
 
-        private void NameHereGood()
+        private void CreateListsForDataGrid()
         {
             var reading = LsonVars.Parse(File.ReadAllText(coordinatesFilePath));
             var coordintaes = reading["CoordinatesList"];
@@ -136,60 +112,48 @@ namespace WowCoordinatesToSQLPaths
             _creatureMovementTemplateRows.Clear();
             _scriptWaypointRows.Clear();
 
-            for (int i = 0; i < coordintaes.Count; i++)
+            for (int i = int.Parse(startingPoint.Text); i < coordintaes.Count; i++)
             {
                 var row = coordintaes[i];
+                CreatureMovementRow creatureMovementRow = new CreatureMovementRow();
+                CreatureMovementTemplateRow creatureMovementTemplateRow = new CreatureMovementTemplateRow();
+                ScriptWaypointRow scriptWaypointRow = new ScriptWaypointRow();
 
-                if ((_isGuidChecked || _isEntryChecked) && !_isScriptWaypointPath)
-                {
-                    if (_isGuidChecked)
-                    {
-                        CreatureMovementRow creatureMovementRow = new CreatureMovementRow();
-                        creatureMovementRow.Id = int.Parse(guidEntry.Text);
-                        creatureMovementRow.Point = i;
-                        creatureMovementRow.PositionX = (float)row["positionX"].GetDecimalLenient();
-                        creatureMovementRow.PositionY = (float)row["positionY"].GetDecimalLenient();
-                        creatureMovementRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
-                        creatureMovementRow.Orientation = (float)row["orientation"].GetDecimalLenient();
+                creatureMovementRow.Id = int.Parse(guidEntry.Text);
+                creatureMovementRow.Point = i;
+                creatureMovementRow.PositionX = (float)row["positionX"].GetDecimalLenient();
+                creatureMovementRow.PositionY = (float)row["positionY"].GetDecimalLenient();
+                creatureMovementRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
+                creatureMovementRow.Orientation = (float)row["orientation"].GetDecimalLenient();
 
-                        _creatureMovementRows.Add(creatureMovementRow);
-                    }
-                    else
-                    {
-                        CreatureMovementTemplateRow creatureMovementTemplateRow = new CreatureMovementTemplateRow();
-                        creatureMovementTemplateRow.Entry = int.Parse(guidEntry.Text);
-                        creatureMovementTemplateRow.Point = i;
-                        creatureMovementTemplateRow.PositionX = (float)row["positionX"].GetDecimalLenient();
-                        creatureMovementTemplateRow.PositionY = (float)row["positionY"].GetDecimalLenient();
-                        creatureMovementTemplateRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
-                        creatureMovementTemplateRow.Orientation = (float)row["orientation"].GetDecimalLenient();
+                _creatureMovementRows.Add(creatureMovementRow);
 
-                        _creatureMovementTemplateRows.Add(creatureMovementTemplateRow);
-                    }
-                }
-                else
-                {
-                    ScriptWaypointRow scriptWaypointRow = new ScriptWaypointRow();
-                    scriptWaypointRow.Entry = int.Parse(guidEntry.Text);
-                    scriptWaypointRow.PointId = i;
-                    scriptWaypointRow.LocationX = (float)row["positionX"].GetDecimalLenient();
-                    scriptWaypointRow.LocationY = (float)row["positionY"].GetDecimalLenient();
-                    scriptWaypointRow.LocationZ = (float)row["positionZ"].GetDecimalLenient();
+                creatureMovementTemplateRow.Entry = int.Parse(guidEntry.Text);
+                creatureMovementTemplateRow.Point = i;
+                creatureMovementTemplateRow.PositionX = (float)row["positionX"].GetDecimalLenient();
+                creatureMovementTemplateRow.PositionY = (float)row["positionY"].GetDecimalLenient();
+                creatureMovementTemplateRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
+                creatureMovementTemplateRow.Orientation = (float)row["orientation"].GetDecimalLenient();
 
-                    _scriptWaypointRows.Add(scriptWaypointRow);
-                }
+                _creatureMovementTemplateRows.Add(creatureMovementTemplateRow);
+
+                scriptWaypointRow.Entry = int.Parse(guidEntry.Text);
+                scriptWaypointRow.PointId = i;
+                scriptWaypointRow.LocationX = (float)row["positionX"].GetDecimalLenient();
+                scriptWaypointRow.LocationY = (float)row["positionY"].GetDecimalLenient();
+                scriptWaypointRow.LocationZ = (float)row["positionZ"].GetDecimalLenient();
+
+                _scriptWaypointRows.Add(scriptWaypointRow);
             }
-
-
         }
-        private void CheckTableType()
+
+        private void UpdateDataGrid()
         {
             if ((_isGuidChecked || _isEntryChecked) && !_isScriptWaypointPath)
             {
                 if (_isGuidChecked)
                 {
                     Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementRows);
-
                 }
                 else
                 {
@@ -222,90 +186,93 @@ namespace WowCoordinatesToSQLPaths
                     Console.WriteLine("CreatureMovementRows will be updated");
                     foreach (CreatureMovementRow row in _creatureMovementRows)
                     {
-                        if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                        if (e.Row.GetIndex() == row.Point)
                         {
-                            row.Id = Int32.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Point") == 0)
-                        {
-                            row.Point = e.Row.GetIndex();
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
-                        {
-                            row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
-                        {
-                            row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
-                        {
-                            row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
-                        {
-                            row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
-                        {
-                            row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
-                        {
-                            row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
-                        {
-                            row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
-                        {
-                            row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                        {
-                            row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                        {
-                            row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
-                        {
-                            row.Emote = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
-                        {
-                            row.Spell = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
-                        {
-                            row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
-                        {
-                            row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
-                        {
-                            row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
+                            if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                            {
+                                row.Id = Int32.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                            {
+                                row.Point = e.Row.GetIndex();
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                            {
+                                row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                            {
+                                row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                            {
+                                row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                            {
+                                row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                            {
+                                row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                            {
+                                row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                            {
+                                row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                            {
+                                row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                            {
+                                row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                            {
+                                row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                            {
+                                row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                            {
+                                row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                            {
+                                row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                            {
+                                row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                            {
+                                row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
                         }
                     }
                 }
@@ -314,90 +281,93 @@ namespace WowCoordinatesToSQLPaths
                     Console.WriteLine("CreatureMovementTemplateRows will be updated");
                     foreach (CreatureMovementTemplateRow row in _creatureMovementTemplateRows)
                     {
-                        if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                        if (e.Row.GetIndex() == row.Point)
                         {
-                            row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Point") == 0)
-                        {
-                            row.Point = e.Row.GetIndex();
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
-                        {
-                            row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
-                        {
-                            row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
-                        {
-                            row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
-                        {
-                            row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
-                        {
-                            row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
-                        {
-                            row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
-                        {
-                            row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
-                        {
-                            row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                        {
-                            row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                        {
-                            row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
-                        {
-                            row.Emote = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
-                        {
-                            row.Spell = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
-                        {
-                            row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
-                        {
-                            row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
-                        }
-                        else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
-                        {
-                            row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
-                            break;
+                            if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                            {
+                                row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                            {
+                                row.Point = e.Row.GetIndex();
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                            {
+                                row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                            {
+                                row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                            {
+                                row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                            {
+                                row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                            {
+                                row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                            {
+                                row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                            {
+                                row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                            {
+                                row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                            {
+                                row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                            {
+                                row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                            {
+                                row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                            {
+                                row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                            {
+                                row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                            {
+                                row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+                            else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                            {
+                                row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
                         }
                     }
                 }
@@ -447,6 +417,25 @@ namespace WowCoordinatesToSQLPaths
                     }
                 }
             }
+        }
+
+        private void guidEntry_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (guidEntry != null && guidEntry.Text != "")
+            {
+                if (getCoordinatesFiles != null) getCoordinatesFiles.IsEnabled = true;
+            }
+        }
+
+        private void RemoveText(object sender, EventArgs e)
+        {
+            if (guidEntry != null) guidEntry.Text = "";
+        }
+
+        private void AddText(object sender, EventArgs e)
+        {
+            if (guidEntry != null && String.IsNullOrWhiteSpace(guidEntry.Text))
+                guidEntry.Text = "guid or entry";
         }
     }
 }
