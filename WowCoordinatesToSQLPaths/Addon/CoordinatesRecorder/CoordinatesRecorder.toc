@@ -1,0 +1,10 @@
+﻿## Interface: 11200
+## Title: CoordinatesRecorder
+## Author: Chucksta
+## Notes: Modified  by Oppahansi on 6/6/2017
+## Version: 1.1
+## DefaultState: Enabled
+## SavedVariables: CoordinatesList
+
+CoordinatesRecorder.xml
+CoordinatesRecorder.lua
