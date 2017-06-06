@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using LsonLib;
 using System.IO;
+using System.Windows.Controls;
 
 namespace WowCoordinatesToSQLPaths
 {
@@ -207,6 +208,245 @@ namespace WowCoordinatesToSQLPaths
         private void saveWaypoints_Click(object sender, RoutedEventArgs e)
         {
 
+        }
+
+        private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            Console.WriteLine(sender);
+            Console.WriteLine(e.Column.Header.ToString() + " " + e.Row.GetIndex());
+
+            if ((_isGuidChecked || _isEntryChecked) && !_isScriptWaypointPath)
+            {
+                if (_isGuidChecked)
+                {
+                    Console.WriteLine("CreatureMovementRows will be updated");
+                    foreach (CreatureMovementRow row in _creatureMovementRows)
+                    {
+                        if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                        {
+                            row.Id = Int32.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                        {
+                            row.Point = e.Row.GetIndex();
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                        {
+                            row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                        {
+                            row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                        {
+                            row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                        {
+                            row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                        {
+                            row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                        {
+                            row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                        {
+                            row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                        {
+                            row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                        {
+                            row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                        {
+                            row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                        {
+                            row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                        {
+                            row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                        {
+                            row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                        {
+                            row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                        {
+                            row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("CreatureMovementTemplateRows will be updated");
+                    foreach (CreatureMovementTemplateRow row in _creatureMovementTemplateRows)
+                    {
+                        if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                        {
+                            row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                        {
+                            row.Point = e.Row.GetIndex();
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                        {
+                            row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                        {
+                            row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                        {
+                            row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                        {
+                            row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                        {
+                            row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                        {
+                            row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                        {
+                            row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                        {
+                            row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                        {
+                            row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                        {
+                            row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                        {
+                            row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                        {
+                            row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                        {
+                            row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                        {
+                            row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                        {
+                            row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("ScriptWaypointRows will be updated");
+                foreach (ScriptWaypointRow row in _scriptWaypointRows)
+                {
+                    if (e.Row.GetIndex() == row.PointId)
+                    {
+                        if (e.Column.Header.ToString().CompareTo("Entry") == 0)
+                        {
+                            row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("PointId") == 0)
+                        {
+                            row.PointId = Int32.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("LocationX") == 0)
+                        {
+                            row.LocationX = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("LocationY") == 0)
+                        {
+                            row.LocationY = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("LocationZ") == 0)
+                        {
+                            row.LocationZ = float.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                        {
+                            row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                            break;
+                        }
+                        else if (e.Column.Header.ToString().CompareTo("Comment") == 0)
+                        {
+                            row.Comment = (e.EditingElement as TextBox).Text;
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 }
