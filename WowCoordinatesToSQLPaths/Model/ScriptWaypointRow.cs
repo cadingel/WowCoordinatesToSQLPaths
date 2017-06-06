@@ -8,12 +8,12 @@
 
         public float LocationX { get; set; }
 
-        public float LocatoinY { get; set; }
+        public float LocationY { get; set; }
 
-        public float LocatoinZ { get; set; }
+        public float LocationZ { get; set; }
 
         public int WaitTime { get; set; }
 
-        public string Comment { get; set; }
+        public string Comment { get; set; } = "";
     }
 }
