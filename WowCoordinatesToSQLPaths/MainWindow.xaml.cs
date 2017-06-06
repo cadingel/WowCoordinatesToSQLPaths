@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using WowCoordinatesToSQLPaths.Model;
@@ -26,6 +27,8 @@ namespace WowCoordinatesToSQLPaths
         private List<CreatureMovementRow> _creatureMovementRows = new List<CreatureMovementRow>();
         private List<CreatureMovementTemplateRow> _creatureMovementTemplateRows = new List<CreatureMovementTemplateRow>();
         private List<ScriptWaypointRow> _scriptWaypointRows = new List<ScriptWaypointRow>();
+        private List<CreatureMovementRow> _creatureMovementRowsTwoWays = new List<CreatureMovementRow>();
+        private List<CreatureMovementTemplateRow> _creatureMovementTemplateRowsTwoWays = new List<CreatureMovementTemplateRow>();
 
         private string coordinatesFilePath = "";
     
@@ -128,6 +131,10 @@ namespace WowCoordinatesToSQLPaths
 
                 _creatureMovementRows.Add(creatureMovementRow);
 
+                 // 1 2 4 5 4 3 2 
+
+
+
                 creatureMovementTemplateRow.Entry = int.Parse(guidEntry.Text);
                 creatureMovementTemplateRow.Point = i;
                 creatureMovementTemplateRow.PositionX = (float)row["positionX"].GetDecimalLenient();
@@ -136,6 +143,7 @@ namespace WowCoordinatesToSQLPaths
                 creatureMovementTemplateRow.Orientation = (float)row["orientation"].GetDecimalLenient();
 
                 _creatureMovementTemplateRows.Add(creatureMovementTemplateRow);
+               
 
                 scriptWaypointRow.Entry = int.Parse(guidEntry.Text);
                 scriptWaypointRow.PointId = i;
@@ -145,6 +153,15 @@ namespace WowCoordinatesToSQLPaths
 
                 _scriptWaypointRows.Add(scriptWaypointRow);
             }
+
+            var reversedCreatureMovementRows = _creatureMovementRows;
+            reversedCreatureMovementRows.Reverse();
+
+            var reversedCreatureMovementTemplateRows = _creatureMovementTemplateRows;
+            reversedCreatureMovementTemplateRows.Reverse();
+
+            
+            
         }
 
         private void UpdateDataGrid()
