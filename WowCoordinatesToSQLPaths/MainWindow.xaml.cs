@@ -51,6 +51,13 @@ namespace WowCoordinatesToSQLPaths
         {
             _isGuidChecked = true;
             _isEntryChecked = false;
+            _isScriptWaypointPath = false;
+            _isOneDirectionalPath = true;
+            
+            if (oneDirectional != null)
+            {
+                oneDirectional.IsChecked = true;
+            }
 
             UpdateDataGrid();
         }
@@ -86,6 +93,12 @@ namespace WowCoordinatesToSQLPaths
             _isScriptWaypointPath = true;
             _isOneDirectionalPath = false;
             _isBiDirectionalPath = false;
+            _isGuidChecked = false;
+
+            if (script != null)
+            {
+                script.IsChecked = true;
+            }
 
             UpdateDataGrid();
         }
