@@ -1,4 +1,6 @@
-﻿namespace WowCoordinatesToSQLPaths.Model
+﻿using System;
+
+namespace WowCoordinatesToSQLPaths.Model
 {
     class Settings
     {
