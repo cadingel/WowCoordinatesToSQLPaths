@@ -189,14 +189,10 @@ namespace WowCoordinatesToSQLPaths
 
         private void dataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
-            Console.WriteLine(sender);
-            Console.WriteLine(e.Column.Header.ToString() + " " + e.Row.GetIndex());
-
             if ((_isGuidChecked || _isEntryChecked) && !_isScriptWaypointPath)
             {
                 if (_isGuidChecked)
                 {
-                    Console.WriteLine("CreatureMovementRows will be updated");
                     foreach (CreatureMovementRow row in _creatureMovementRows)
                     {
                         if (e.Row.GetIndex() == row.Point)
@@ -291,7 +287,6 @@ namespace WowCoordinatesToSQLPaths
                 }
                 else
                 {
-                    Console.WriteLine("CreatureMovementTemplateRows will be updated");
                     foreach (CreatureMovementTemplateRow row in _creatureMovementTemplateRows)
                     {
                         if (e.Row.GetIndex() == row.Point)
@@ -387,7 +382,6 @@ namespace WowCoordinatesToSQLPaths
             }
             else
             {
-                Console.WriteLine("ScriptWaypointRows will be updated");
                 foreach (ScriptWaypointRow row in _scriptWaypointRows)
                 {
                     if (e.Row.GetIndex() == row.PointId)
