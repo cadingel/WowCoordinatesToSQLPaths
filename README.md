@@ -28,9 +28,9 @@ Currently only tested with cmangos-classic.
 15. Test and hf.
 
 # Made using:
-- VS2017 
-- Notepad++ / VS Code
-- Coffee
+- VS2017 -> C# / WPF
+- Notepad++ / VS Code -> Lua, XML -> WoW Addon
+- Coffee -> Code
 
 # Why remake an existing tool?
 A good question. We just wanted to have some special functionalities and our own code base as practice and learning project.
