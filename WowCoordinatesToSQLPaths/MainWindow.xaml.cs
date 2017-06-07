@@ -132,9 +132,9 @@ namespace WowCoordinatesToSQLPaths
             for (int i = int.Parse(startingPoint.Text); i < coordintaes.Count; i++)
             {
                 var row = coordintaes[i];
-                CreatureMovementRow creatureMovementRow = new CreatureMovementRow();
-                CreatureMovementTemplateRow creatureMovementTemplateRow = new CreatureMovementTemplateRow();
-                ScriptWaypointRow scriptWaypointRow = new ScriptWaypointRow();
+                var creatureMovementRow = new CreatureMovementRow();
+                var creatureMovementTemplateRow = new CreatureMovementTemplateRow();
+                var scriptWaypointRow = new ScriptWaypointRow();
 
                 creatureMovementRow.Id = int.Parse(guidEntry.Text);
                 creatureMovementRow.Point = i;
@@ -145,10 +145,6 @@ namespace WowCoordinatesToSQLPaths
 
                 _creatureMovementRows.Add(creatureMovementRow);
 
-                 // 1 2 4 5 4 3 2 
-
-
-
                 creatureMovementTemplateRow.Entry = int.Parse(guidEntry.Text);
                 creatureMovementTemplateRow.Point = i;
                 creatureMovementTemplateRow.PositionX = (float)row["positionX"].GetDecimalLenient();
@@ -157,7 +153,6 @@ namespace WowCoordinatesToSQLPaths
                 creatureMovementTemplateRow.Orientation = (float)row["orientation"].GetDecimalLenient();
 
                 _creatureMovementTemplateRows.Add(creatureMovementTemplateRow);
-               
 
                 scriptWaypointRow.Entry = int.Parse(guidEntry.Text);
                 scriptWaypointRow.PointId = i;
@@ -168,14 +163,38 @@ namespace WowCoordinatesToSQLPaths
                 _scriptWaypointRows.Add(scriptWaypointRow);
             }
 
-            var reversedCreatureMovementRows = _creatureMovementRows;
-            reversedCreatureMovementRows.Reverse();
 
-            var reversedCreatureMovementTemplateRows = _creatureMovementTemplateRows;
-            reversedCreatureMovementTemplateRows.Reverse();
+            var copyCreatureMovementRows = new List<CreatureMovementRow>();
+            var copyCreatureMovementTemplateRows = new List<CreatureMovementTemplateRow>();
 
-            
-            
+            foreach (var row in _creatureMovementRows)
+            {
+                _creatureMovementRowsTwoWays.Add(row.Clone() as CreatureMovementRow);
+                copyCreatureMovementRows.Add(row.Clone() as CreatureMovementRow);
+            }
+
+            foreach (var row in _creatureMovementTemplateRows)
+            {
+                _creatureMovementTemplateRowsTwoWays.Add(row.Clone() as CreatureMovementTemplateRow);
+                copyCreatureMovementTemplateRows.Add(row.Clone() as CreatureMovementTemplateRow);
+            }
+
+            copyCreatureMovementRows.Reverse();
+            copyCreatureMovementTemplateRows.Reverse();
+
+            var creatureMovement = copyCreatureMovementRows.ToArray();
+            var creatureMovementTemplate = copyCreatureMovementTemplateRows.ToArray();
+
+            for (int i = _creatureMovementRows.Count, j = 1; i < _creatureMovementRows.Count * 2 - 2; i++, j++)
+            {
+                var tempCreatureMovementRow = creatureMovement[j].Clone() as CreatureMovementRow;
+                tempCreatureMovementRow.Point = i;
+                _creatureMovementRowsTwoWays.Add(tempCreatureMovementRow);
+
+                var tempCreatureMovementTemplateRow = creatureMovementTemplate[j].Clone() as CreatureMovementTemplateRow;
+                tempCreatureMovementTemplateRow.Point = i;
+                _creatureMovementTemplateRowsTwoWays.Add(tempCreatureMovementTemplateRow);
+            }
         }
 
         private void UpdateDataGrid()
@@ -184,11 +203,25 @@ namespace WowCoordinatesToSQLPaths
             {
                 if (_isGuidChecked)
                 {
-                    Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementRows);
+                    if (_isOneDirectionalPath)
+                    {
+                        Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementRows);
+                    }
+                    else
+                    {
+                        Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementRowsTwoWays);
+                    }
                 }
                 else
                 {
-                    Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementTemplateRows);
+                    if (_isOneDirectionalPath)
+                    {
+                        Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementTemplateRows);
+                    }
+                    else
+                    {
+                        Waypoints = CollectionViewSource.GetDefaultView(_creatureMovementTemplateRowsTwoWays);
+                    }
                 }
             }
             else
@@ -211,7 +244,7 @@ namespace WowCoordinatesToSQLPaths
             {
                 if (_isGuidChecked)
                 {
-                    foreach (CreatureMovementRow row in _creatureMovementRows)
+                    foreach (var row in _creatureMovementRows)
                     {
                         if (e.Row.GetIndex() == row.Point)
                         {
@@ -305,7 +338,7 @@ namespace WowCoordinatesToSQLPaths
                 }
                 else
                 {
-                    foreach (CreatureMovementTemplateRow row in _creatureMovementTemplateRows)
+                    foreach (var row in _creatureMovementTemplateRows)
                     {
                         if (e.Row.GetIndex() == row.Point)
                         {
@@ -400,7 +433,7 @@ namespace WowCoordinatesToSQLPaths
             }
             else
             {
-                foreach (ScriptWaypointRow row in _scriptWaypointRows)
+                foreach (var row in _scriptWaypointRows)
                 {
                     if (e.Row.GetIndex() == row.PointId)
                     {
@@ -460,7 +493,9 @@ namespace WowCoordinatesToSQLPaths
         private void AddText(object sender, EventArgs e)
         {
             if (guidEntry != null && String.IsNullOrWhiteSpace(guidEntry.Text))
+            {
                 guidEntry.Text = "guid or entry";
+            }
         }
     }
 }
