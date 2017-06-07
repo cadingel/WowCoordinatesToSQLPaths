@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using WowCoordinatesToSQLPaths.Model;
@@ -782,9 +781,9 @@ namespace WowCoordinatesToSQLPaths
 #endif
                             .Append($"{row.Id}, ")
                             .Append($"{row.Point}, ")
-                            .Append($"{Math.Round(row.PositionX, 2)}, ")
-                            .Append($"{Math.Round(row.PositionY, 2)}, ")
-                            .Append($"{Math.Round(row.PositionZ, 2)}, ")
+                            .Append($"{row.PositionX}, ")
+                            .Append($"{row.PositionY}, ")
+                            .Append($"{row.PositionZ}, ")
                             .Append($"{row.WaitTime}, ")
                             .Append($"{row.ScriptId}, ")
                             .Append($"{row.TextId1}, ")
@@ -797,7 +796,7 @@ namespace WowCoordinatesToSQLPaths
 #if (SPECIAL)
                             .Append($"{row.WpGuid}, ")
 #endif
-                            .Append($"{Math.Round(row.Orientation, 2)}, ")
+                            .Append($"{row.Orientation}, ")
                             .Append($"{row.Model1}, ")
                             .Append($"{row.Model2});\n");
                     }
@@ -818,9 +817,9 @@ namespace WowCoordinatesToSQLPaths
                             .Append($"{row.PathId}, ")
 #endif
                             .Append($"{row.Point}, ")
-                            .Append($"{Math.Round(row.PositionX, 2)}, ")
-                            .Append($"{Math.Round(row.PositionY, 2)}, ")
-                            .Append($"{Math.Round(row.PositionZ, 2)}, ")
+                            .Append($"{row.PositionX}, ")
+                            .Append($"{row.PositionY}, ")
+                            .Append($"{row.PositionZ}, ")
                             .Append($"{row.WaitTime}, ")
                             .Append($"{row.ScriptId}, ")
                             .Append($"{row.TextId1}, ")
@@ -833,7 +832,7 @@ namespace WowCoordinatesToSQLPaths
 #if (SPECIAL)
                             .Append($"{row.WpGuid}, ")
 #endif
-                            .Append($"{Math.Round(row.Orientation, 2)}, ")
+                            .Append($"{row.Orientation}, ")
                             .Append($"{row.Model1}, ")
                             .Append($"{row.Model2});\n");
                     }
@@ -846,9 +845,9 @@ namespace WowCoordinatesToSQLPaths
                     sqlStatement.Append("INSERT INTO script_waypoint (entry, `pointid`, `location_x`, `location_y`, `location_z`, `waittime`, `point_comment`) VALUES (")
                         .Append($"{row.Entry}, ")
                         .Append($"{row.PointId}, ")
-                        .Append($"{Math.Round(row.LocationX, 2)}, ")
-                        .Append($"{Math.Round(row.LocationY, 2)}, ")
-                        .Append($"{Math.Round(row.LocationZ, 2)}, ")
+                        .Append($"{row.LocationX}, ")
+                        .Append($"{row.LocationY}, ")
+                        .Append($"{row.LocationZ}, ")
                         .Append($"{row.WaitTime}, ")
                         .Append($"\"{row.Comment}\");\n");
                 }
