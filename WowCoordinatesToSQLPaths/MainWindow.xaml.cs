@@ -21,6 +21,7 @@ namespace WowCoordinatesToSQLPaths
         private bool _isOneDirectionalPath = true;
         private bool _isBiDirectionalPath = false;
         private bool _isScriptWaypointPath = false;
+        private bool _orientationChecked = false;
         private int _guidEntryValue = 123;
         private int _startingPoint = 1;
 
@@ -109,8 +110,8 @@ namespace WowCoordinatesToSQLPaths
 
         private void getCoordinatesFiles_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = ("Lua File|*.lua");
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = ("Lua Files (*.lua)|*.lua" /*|CSV Files (*.csv)|*.csv*/);
 
             if (openFileDialog.ShowDialog() == true)
             {
@@ -123,47 +124,53 @@ namespace WowCoordinatesToSQLPaths
 
         private void CreateListsForDataGrid()
         {
-            var reading = LsonVars.Parse(File.ReadAllText(coordinatesFilePath));
-            var coordintaes = reading["CoordinatesList"];
-            _creatureMovementRows.Clear();
-            _creatureMovementTemplateRows.Clear();
-            _scriptWaypointRows.Clear();
-
-            for (int i = int.Parse(startingPoint.Text); i < coordintaes.Count; i++)
+            if (coordinatesFilePath.EndsWith(".lua"))
             {
-                var row = coordintaes[i];
-                var creatureMovementRow = new CreatureMovementRow();
-                var creatureMovementTemplateRow = new CreatureMovementTemplateRow();
-                var scriptWaypointRow = new ScriptWaypointRow();
+                var reading = LsonVars.Parse(File.ReadAllText(coordinatesFilePath));
+                var coordintaes = reading["CoordinatesList"];
+                _creatureMovementRows.Clear();
+                _creatureMovementTemplateRows.Clear();
+                _scriptWaypointRows.Clear();
 
-                creatureMovementRow.Id = int.Parse(guidEntry.Text);
-                creatureMovementRow.Point = i;
-                creatureMovementRow.PositionX = (float)row["positionX"].GetDecimalLenient();
-                creatureMovementRow.PositionY = (float)row["positionY"].GetDecimalLenient();
-                creatureMovementRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
-                creatureMovementRow.Orientation = (float)row["orientation"].GetDecimalLenient();
+                for (int i = int.Parse(startingPoint.Text); i < coordintaes.Count; i++)
+                {
+                    var row = coordintaes[i];
+                    var creatureMovementRow = new CreatureMovementRow();
+                    var creatureMovementTemplateRow = new CreatureMovementTemplateRow();
+                    var scriptWaypointRow = new ScriptWaypointRow();
 
-                _creatureMovementRows.Add(creatureMovementRow);
+                    creatureMovementRow.Id = int.Parse(guidEntry.Text);
+                    creatureMovementRow.Point = i;
+                    creatureMovementRow.PositionX = (float)row["positionX"].GetDecimalLenient();
+                    creatureMovementRow.PositionY = (float)row["positionY"].GetDecimalLenient();
+                    creatureMovementRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
+                    creatureMovementRow.Orientation = _orientationChecked ? (float)row["orientation"].GetDecimalLenient() : 0;
 
-                creatureMovementTemplateRow.Entry = int.Parse(guidEntry.Text);
-                creatureMovementTemplateRow.Point = i;
-                creatureMovementTemplateRow.PositionX = (float)row["positionX"].GetDecimalLenient();
-                creatureMovementTemplateRow.PositionY = (float)row["positionY"].GetDecimalLenient();
-                creatureMovementTemplateRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
-                creatureMovementTemplateRow.Orientation = (float)row["orientation"].GetDecimalLenient();
+                    _creatureMovementRows.Add(creatureMovementRow);
 
-                _creatureMovementTemplateRows.Add(creatureMovementTemplateRow);
+                    creatureMovementTemplateRow.Entry = int.Parse(guidEntry.Text);
+                    creatureMovementTemplateRow.Point = i;
+                    creatureMovementTemplateRow.PositionX = (float)row["positionX"].GetDecimalLenient();
+                    creatureMovementTemplateRow.PositionY = (float)row["positionY"].GetDecimalLenient();
+                    creatureMovementTemplateRow.PositionZ = (float)row["positionZ"].GetDecimalLenient();
+                    creatureMovementTemplateRow.Orientation = _orientationChecked ? (float)row["orientation"].GetDecimalLenient() : 0;
 
-                scriptWaypointRow.Entry = int.Parse(guidEntry.Text);
-                scriptWaypointRow.PointId = i;
-                scriptWaypointRow.LocationX = (float)row["positionX"].GetDecimalLenient();
-                scriptWaypointRow.LocationY = (float)row["positionY"].GetDecimalLenient();
-                scriptWaypointRow.LocationZ = (float)row["positionZ"].GetDecimalLenient();
+                    _creatureMovementTemplateRows.Add(creatureMovementTemplateRow);
 
-                _scriptWaypointRows.Add(scriptWaypointRow);
+                    scriptWaypointRow.Entry = int.Parse(guidEntry.Text);
+                    scriptWaypointRow.PointId = i;
+                    scriptWaypointRow.LocationX = (float)row["positionX"].GetDecimalLenient();
+                    scriptWaypointRow.LocationY = (float)row["positionY"].GetDecimalLenient();
+                    scriptWaypointRow.LocationZ = (float)row["positionZ"].GetDecimalLenient();
+
+                    _scriptWaypointRows.Add(scriptWaypointRow);
+                }
             }
+            else
+            {
 
-
+            }
+            
             var copyCreatureMovementRows = new List<CreatureMovementRow>();
             var copyCreatureMovementTemplateRows = new List<CreatureMovementTemplateRow>();
 
@@ -244,191 +251,386 @@ namespace WowCoordinatesToSQLPaths
             {
                 if (_isGuidChecked)
                 {
-                    foreach (var row in _creatureMovementRows)
+                    if (_isOneDirectionalPath)
                     {
-                        if (e.Row.GetIndex() == row.Point)
+                        foreach (var row in _creatureMovementRows)
                         {
-                            if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                            if (e.Row.GetIndex() == row.Point)
                             {
-                                row.Id = Int32.Parse((e.EditingElement as TextBox).Text);
-                                break;
+                                if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                                {
+                                    row.Id = Int32.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                                {
+                                    row.Point = e.Row.GetIndex();
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                                {
+                                    row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                                {
+                                    row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                                {
+                                    row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                                {
+                                    row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                                {
+                                    row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                                {
+                                    row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                                {
+                                    row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                                {
+                                    row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                                {
+                                    row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                                {
+                                    row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                                {
+                                    row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                                {
+                                    row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                                {
+                                    row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
                             }
-                            else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                        }
+                    }
+                    else
+                    {
+                        foreach (var row in _creatureMovementRowsTwoWays)
+                        {
+                            if (e.Row.GetIndex() == row.Point)
                             {
-                                row.Point = e.Row.GetIndex();
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
-                            {
-                                row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
-                            {
-                                row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
-                            {
-                                row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
-                            {
-                                row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
-                            {
-                                row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
-                            {
-                                row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
-                            {
-                                row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
-                            {
-                                row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                            {
-                                row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                            {
-                                row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
-                            {
-                                row.Emote = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
-                            {
-                                row.Spell = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
-                            {
-                                row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
-                            {
-                                row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
-                            {
-                                row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
+                                if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                                {
+                                    row.Id = Int32.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                                {
+                                    row.Point = e.Row.GetIndex();
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                                {
+                                    row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                                {
+                                    row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                                {
+                                    row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                                {
+                                    row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                                {
+                                    row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                                {
+                                    row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                                {
+                                    row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                                {
+                                    row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                                {
+                                    row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                                {
+                                    row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                                {
+                                    row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                                {
+                                    row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                                {
+                                    row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
                             }
                         }
                     }
                 }
                 else
                 {
-                    foreach (var row in _creatureMovementTemplateRows)
+                    if (_isOneDirectionalPath)
                     {
-                        if (e.Row.GetIndex() == row.Point)
+                        foreach (var row in _creatureMovementTemplateRows)
                         {
-                            if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                            if (e.Row.GetIndex() == row.Point)
                             {
-                                row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Point") == 0)
-                            {
-                                row.Point = e.Row.GetIndex();
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
-                            {
-                                row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
-                            {
-                                row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
-                            {
-                                row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
-                            {
-                                row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
-                            {
-                                row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
-                            {
-                                row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
-                            {
-                                row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
-                            {
-                                row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                            {
-                                row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
-                            {
-                                row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
-                            {
-                                row.Emote = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
-                            {
-                                row.Spell = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
-                            {
-                                row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
-                            {
-                                row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
-                            }
-                            else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
-                            {
-                                row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
-                                break;
+                                if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                                {
+                                    row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                                {
+                                    row.Point = e.Row.GetIndex();
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                                {
+                                    row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                                {
+                                    row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                                {
+                                    row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                                {
+                                    row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                                {
+                                    row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                                {
+                                    row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                                {
+                                    row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                                {
+                                    row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                                {
+                                    row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                                {
+                                    row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                                {
+                                    row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                                {
+                                    row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                                {
+                                    row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
                             }
                         }
                     }
+                    else
+                    {
+                        foreach (var row in _creatureMovementTemplateRowsTwoWays)
+                        {
+                            if (e.Row.GetIndex() == row.Point)
+                            {
+                                if (e.Column.Header.ToString().CompareTo("Id") == 0)
+                                {
+                                    row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Point") == 0)
+                                {
+                                    row.Point = e.Row.GetIndex();
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionX") == 0)
+                                {
+                                    row.PositionX = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionY") == 0)
+                                {
+                                    row.PositionY = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("PositionZ") == 0)
+                                {
+                                    row.PositionZ = float.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("WaitTime") == 0)
+                                {
+                                    row.WaitTime = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("ScriptId") == 0)
+                                {
+                                    row.ScriptId = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId1") == 0)
+                                {
+                                    row.TextId1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId2") == 0)
+                                {
+                                    row.TextId2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId3") == 0)
+                                {
+                                    row.TextId3 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId4 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("TextId5") == 0)
+                                {
+                                    row.TextId5 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Emote") == 0)
+                                {
+                                    row.Emote = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
+                                {
+                                    row.Spell = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Orientation") == 0)
+                                {
+                                    row.Orientation = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model1") == 0)
+                                {
+                                    row.Model1 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                                else if (e.Column.Header.ToString().CompareTo("Model2") == 0)
+                                {
+                                    row.Model2 = int.Parse((e.EditingElement as TextBox).Text);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    
                 }
             }
             else
@@ -495,6 +697,14 @@ namespace WowCoordinatesToSQLPaths
             if (guidEntry != null && String.IsNullOrWhiteSpace(guidEntry.Text))
             {
                 guidEntry.Text = "guid or entry";
+            }
+        }
+
+        private void orientation_Click(object sender, RoutedEventArgs e)
+        {
+            if (orientation != null)
+            {
+                _orientationChecked = orientation.IsChecked == true ? true : false;
             }
         }
     }
