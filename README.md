@@ -20,7 +20,7 @@ Currently only tested with cmangos-classic.
 7. Record waypoints by moving around and pressing the **Record Waypoint** button (You only need to record the waypoints in one direction)
 8. When waypoints have been recorded, log out to generate the addon log file
 9. Start WowCoordinatesToSQLPaths.exe
-10. Fill in the creature **guid** for creature_movement table or creature_template **entry** for creature_movement_template table / script_waypoint table.
+10. Fill in the creature **guid** for creature_movement table or creature_template **entry** for creature_movement_template table / script_waypoint table and load the addon log file from your **../WoW/WTF/Account/Username/SavedVariables/CoordinatesRecorder.lua**.
 11. Select the wished type of path (one-directional, bi-directional or script). By selecting **script** we assume you provide the creature_template **entry**.
 12. Optionally edit the values.
 13. Save the waypoints which will be saved as a sql script.
