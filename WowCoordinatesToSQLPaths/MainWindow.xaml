@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WowCoordinatesToSQLPaths"
         mc:Ignorable="d"
-        Title="MainWindow" Height="500" Width="720" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
+        Title="Wow Coordinates To SQL Paths" Height="500" Width="720" ResizeMode="NoResize" SizeToContent="WidthAndHeight">
     <Grid>
         <Label x:Name="currentlyLoadedCoordinatesFile" Content="Currently no waypoint coordinates loaded.." HorizontalAlignment="Left" FontWeight="Bold" ToolTip="GUID or entry ID of the creature/NPC." Margin="0,0,0,444"/>
         <DataGrid x:Name="dataGrid" ItemsSource="{Binding Waypoints}" Margin="9,20,11,0" CanUserResizeColumns="True" Height="226" VerticalAlignment="Top"/>
