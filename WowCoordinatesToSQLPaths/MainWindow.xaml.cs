@@ -792,7 +792,7 @@ namespace WowCoordinatesToSQLPaths
                         .Append($"{Math.Round(row.LocationY, 2)}, ")
                         .Append($"{Math.Round(row.LocationZ, 2)}, ")
                         .Append($"{row.WaitTime}, ")
-                        .Append($"{row.Comment});\n");
+                        .Append($"\"{row.Comment}\");\n");
                 }
             }
 
