@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WowCoordinatesToSQLPaths.Model
+﻿namespace WowCoordinatesToSQLPaths.Model
 {
     class CreateMovementRowBase
     {
@@ -30,6 +28,9 @@ namespace WowCoordinatesToSQLPaths.Model
 
         public int Spell { get; set; }
 
+#if (SPECIAL)
+        public int WpGuid { get; set; }
+#endif
         public float Orientation { get; set; }
 
         public int Model1 { get; set; }

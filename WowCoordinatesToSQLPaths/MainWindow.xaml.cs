@@ -219,6 +219,13 @@ namespace WowCoordinatesToSQLPaths
                                 row.Emote = int.Parse((e.EditingElement as TextBox).Text);
                                 break;
                             }
+#if (SPECIAL)
+                            else if (e.Column.Header.ToString().CompareTo("WpGuid") == 0)
+                            {
+                                row.WpGuid = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+#endif
                             else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
                             {
                                 row.Spell = int.Parse((e.EditingElement as TextBox).Text);
@@ -311,6 +318,13 @@ namespace WowCoordinatesToSQLPaths
                                 row.Emote = int.Parse((e.EditingElement as TextBox).Text);
                                 break;
                             }
+#if (SPECIAL)
+                            else if (e.Column.Header.ToString().CompareTo("WpGuid") == 0)
+                            {
+                                row.WpGuid = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+#endif
                             else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
                             {
                                 row.Spell = int.Parse((e.EditingElement as TextBox).Text);
@@ -345,6 +359,13 @@ namespace WowCoordinatesToSQLPaths
                                 row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
                                 break;
                             }
+#if (!SPECIAL)
+                            else if (e.Column.Header.ToString().CompareTo("PathId") == 0)
+                            {
+                                row.PathId = Int32.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+#endif
                             else if (e.Column.Header.ToString().CompareTo("Point") == 0)
                             {
                                 row.Point = e.Row.GetIndex();
@@ -405,6 +426,13 @@ namespace WowCoordinatesToSQLPaths
                                 row.Emote = int.Parse((e.EditingElement as TextBox).Text);
                                 break;
                             }
+#if (SPECIAL)
+                            else if (e.Column.Header.ToString().CompareTo("WpGuid") == 0)
+                            {
+                                row.WpGuid = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+#endif
                             else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
                             {
                                 row.Spell = int.Parse((e.EditingElement as TextBox).Text);
@@ -437,6 +465,13 @@ namespace WowCoordinatesToSQLPaths
                                 row.Entry = Int32.Parse((e.EditingElement as TextBox).Text);
                                 break;
                             }
+#if (!SPECIAL)
+                            else if (e.Column.Header.ToString().CompareTo("PathId") == 0)
+                            {
+                                row.PathId = Int32.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+#endif
                             else if (e.Column.Header.ToString().CompareTo("Point") == 0)
                             {
                                 row.Point = e.Row.GetIndex();
@@ -497,6 +532,13 @@ namespace WowCoordinatesToSQLPaths
                                 row.Emote = int.Parse((e.EditingElement as TextBox).Text);
                                 break;
                             }
+#if (SPECIAL)
+                            else if (e.Column.Header.ToString().CompareTo("WpGuid") == 0)
+                            {
+                                row.WpGuid = int.Parse((e.EditingElement as TextBox).Text);
+                                break;
+                            }
+#endif
                             else if (e.Column.Header.ToString().CompareTo("Spell") == 0)
                             {
                                 row.Spell = int.Parse((e.EditingElement as TextBox).Text);
@@ -733,7 +775,11 @@ namespace WowCoordinatesToSQLPaths
 
                     foreach (var row in listToUseForCreatureMovement)
                     {
-                        sqlStatement.Append("INSERT INTO creature_movement (id, `point`, `position_x`, `position_y`, `position_z`, `waittime`, `script_id`, `textid1`, `textid2`, `textid3`, `textid4`, `textid5`, `emote`, `spell`, `orientation`, `model1`, `model2`) VALUES (")
+#if (SPECIAL)
+                        sqlStatement.Append("INSERT INTO creature_movement (id, `point`, `position_x`, `position_y`, `position_z`, `waittime`, `script_id`, `textid1`, `textid2`, `textid3`, `textid4`, `textid5`, `emote`, `spell`, `wpguid`, `orientation`, `model1`, `model2`) VALUES (")
+#else
+                            sqlStatement.Append("INSERT INTO creature_movement (id, `point`, `position_x`, `position_y`, `position_z`, `waittime`, `script_id`, `textid1`, `textid2`, `textid3`, `textid4`, `textid5`, `emote`, `spell`, `orientation`, `model1`, `model2`) VALUES (")
+#endif
                             .Append($"{row.Id}, ")
                             .Append($"{row.Point}, ")
                             .Append($"{Math.Round(row.PositionX, 2)}, ")
@@ -748,6 +794,9 @@ namespace WowCoordinatesToSQLPaths
                             .Append($"{row.TextId5}, ")
                             .Append($"{row.Emote}, ")
                             .Append($"{row.Spell}, ")
+#if (SPECIAL)
+                            .Append($"{row.WpGuid}, ")
+#endif
                             .Append($"{Math.Round(row.Orientation, 2)}, ")
                             .Append($"{row.Model1}, ")
                             .Append($"{row.Model2});\n");
@@ -759,9 +808,15 @@ namespace WowCoordinatesToSQLPaths
 
                     foreach (var row in listToUseForCreatureMovementTemplate)
                     {
+#if (SPECIAL)
+                        sqlStatement.Append("INSERT INTO creature_movement_template (entry, `point`, `position_x`, `position_y`, `position_z`, `waittime`, `script_id`, `textid1`, `textid2`, `textid3`, `textid4`, `textid5`, `emote`, `spell`, `wpguid`, `orientation`, `model1`, `model2`) VALUES (")
+#else
                         sqlStatement.Append("INSERT INTO creature_movement_template (entry, `pathId`, `point`, `position_x`, `position_y`, `position_z`, `waittime`, `script_id`, `textid1`, `textid2`, `textid3`, `textid4`, `textid5`, `emote`, `spell`, `orientation`, `model1`, `model2`) VALUES (")
+#endif
                             .Append($"{row.Entry}, ")
+#if (!SPECIAL)
                             .Append($"{row.PathId}, ")
+#endif
                             .Append($"{row.Point}, ")
                             .Append($"{Math.Round(row.PositionX, 2)}, ")
                             .Append($"{Math.Round(row.PositionY, 2)}, ")
@@ -775,6 +830,9 @@ namespace WowCoordinatesToSQLPaths
                             .Append($"{row.TextId5}, ")
                             .Append($"{row.Emote}, ")
                             .Append($"{row.Spell}, ")
+#if (SPECIAL)
+                            .Append($"{row.WpGuid}, ")
+#endif
                             .Append($"{Math.Round(row.Orientation, 2)}, ")
                             .Append($"{row.Model1}, ")
                             .Append($"{row.Model2});\n");

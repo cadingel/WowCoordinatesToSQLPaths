@@ -6,13 +6,17 @@ namespace WowCoordinatesToSQLPaths.Model
     {
         public int Entry { get; set; }
 
+#if (!SPECIAL)
         public int PathId { get; set; }
+#endif
 
         public object Clone()
         {
             CreatureMovementTemplateRow creatureMovementTemplateRow = new CreatureMovementTemplateRow();
             creatureMovementTemplateRow.Entry = Entry;
+#if (!SPECIAL)
             creatureMovementTemplateRow.PathId = PathId;
+#endif
             creatureMovementTemplateRow.Point = Point;
             creatureMovementTemplateRow.PositionX = PositionX;
             creatureMovementTemplateRow.PositionY = PositionY;
@@ -26,6 +30,9 @@ namespace WowCoordinatesToSQLPaths.Model
             creatureMovementTemplateRow.TextId5 = TextId5;
             creatureMovementTemplateRow.Emote = Emote;
             creatureMovementTemplateRow.Spell = Spell;
+#if (SPECIAL)
+            creatureMovementTemplateRow.WpGuid = WpGuid;
+#endif
             creatureMovementTemplateRow.Orientation = Orientation;
             creatureMovementTemplateRow.Model1 = Model1;
             creatureMovementTemplateRow.Model2 = Model2;

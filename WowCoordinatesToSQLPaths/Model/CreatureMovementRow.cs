@@ -23,6 +23,9 @@ namespace WowCoordinatesToSQLPaths.Model
             createMovementRow.TextId5 = TextId5;
             createMovementRow.Emote = Emote;
             createMovementRow.Spell = Spell;
+#if (SPECIAL)
+            createMovementRow.WpGuid = WpGuid;
+#endif
             createMovementRow.Orientation = Orientation;
             createMovementRow.Model1 = Model1;
             createMovementRow.Model2 = Model2;
